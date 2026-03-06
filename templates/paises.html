@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Países</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>body{font-family:'Roboto',Arial,sans-serif;background:#f6f7fb;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}.container{background:#fff;padding:2.5rem 2rem 2rem 2rem;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);min-width:340px;max-width:400px;text-align:center;}h2{margin-top:0;font-weight:700;color:#222;letter-spacing:0.5px;}.btn{background:#4f8cff;color:#fff;border:none;border-radius:8px;padding:0.8rem;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s;}.btn:hover{background:#2563eb;}.list{margin-top:2rem;text-align:left;}.list ul{padding-left:1.2rem;}</style>
+</head>
+<body>
+    <div class="container">
+        <h2>Gestionar Países</h2>
+        <form method="POST" action="/paises/agregar" autocomplete="off">
+            <input type="text" name="nombre_pais" required placeholder="Nombre del país">
+            <button class="btn" type="submit">Agregar país</button>
+        </form>
+        <div class="list">
+            <h3>Países registrados:</h3>
+            <ul>
+                {% for pais in paises %}
+                <li>{{ pais }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <a href="/dashboard" class="btn" style="margin-top:2rem;background:#e5e7eb;color:#222;">Volver al menú</a>
+    </div>
+</body>
+</html>

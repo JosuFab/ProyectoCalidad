@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Productos - ATI Logística Aduanera</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: #f6f7fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #fff;
+            padding: 2.5rem 2rem 2rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            min-width: 340px;
+            max-width: 420px;
+        }
+        h2 {
+            margin-top: 0;
+            font-weight: 700;
+            color: #222;
+            letter-spacing: 0.5px;
+        }
+        form, .product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        label {
+            font-size: 1rem;
+            color: #444;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 0.7rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #f9fafb;
+            transition: border 0.2s;
+        }
+        input[type="text"]:focus, input[type="number"]:focus {
+            border: 1.5px solid #4f8cff;
+            outline: none;
+        }
+        .btn {
+            background: #4f8cff;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.8rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        .messages {
+            margin-bottom: 1rem;
+        }
+        .success {
+            color: #256029;
+            background: #e6f4ea;
+            border: 1px solid #b7e4c7;
+            padding: 0.7rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+        .error {
+            color: #a94442;
+            background: #fbeaea;
+            border: 1px solid #f5c6cb;
+            padding: 0.7rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+        .product-list {
+            margin-top: 2rem;
+        }
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.7rem 0.5rem;
+            border-bottom: 1px solid #ececec;
+        }
+        .product-actions button {
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Gestión de Productos</h2>
+        <div class="messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="{{ category }}">{{ message|safe }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+        </div>
+        <!-- Agregar país -->
+        <form method="POST" action="/paises/agregar" autocomplete="off" style="margin-bottom:1.5rem;">
+            <label for="nombre_pais">Añadir país para exportación:</label>
+            <input type="text" id="nombre_pais" name="nombre_pais" required placeholder="Nombre del país">
+            <button class="btn" type="submit">Agregar país</button>
+        </form>
+
+        <!-- Agregar producto -->
+        <form method="POST" action="/productos/agregar" autocomplete="off">
+            <label for="nombre">Nombre del producto:</label>
+            <input type="text" id="nombre" name="nombre" required placeholder="Nombre del producto">
+            <label for="precio">Precio base (CRC):</label>
+            <input type="number" id="precio" name="precio" required min="0" step="0.01" placeholder="Precio">
+            <button class="btn" type="submit">Agregar producto</button>
+        </form>
+
+        <!-- Registrar precio e impuesto por producto y país -->
+        <form method="POST" action="/precios_impuestos/agregar" autocomplete="off" style="margin-top:1.5rem;">
+            <label>Registrar precio e impuesto para producto y país:</label>
+            <select name="producto_precio" required>
+                <option value="">Producto</option>
+                {% for producto in productos %}
+                <option value="{{ producto['nombre'] }}">{{ producto['nombre'] }}</option>
+                {% endfor %}
+            </select>
+            <select name="pais_precio" required>
+                <option value="">País</option>
+                {% for pais in paises %}
+                <option value="{{ pais }}">{{ pais }}</option>
+                {% endfor %}
+            </select>
+            <select name="moneda_precio" required>
+                <option value="">Moneda</option>
+                {% for moneda in monedas %}
+                <option value="{{ moneda }}">{{ moneda }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="precio_valor" required min="0" step="0.01" placeholder="Precio">
+            <input type="number" name="impuesto_valor" required min="0" step="0.01" placeholder="Impuesto (ej: 0.13 para 13%)">
+            <button class="btn" type="submit">Registrar precio e impuesto</button>
+        </form>
+
+        <!-- Consulta avanzada -->
+        <form method="GET" action="/productos/consulta_avanzada" style="margin-top:2rem;">
+            <label>Consultar datos de producto por país:</label>
+            <select name="producto_consulta" required>
+                <option value="">Producto</option>
+                {% for producto in productos %}
+                <option value="{{ producto['nombre'] }}">{{ producto['nombre'] }}</option>
+                {% endfor %}
+            </select>
+            <select name="moneda_consulta" required>
+                <option value="">Moneda</option>
+                {% for moneda in monedas %}
+                <option value="{{ moneda }}">{{ moneda }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn" type="submit">Consultar</button>
+        </form>
+        <div class="product-list">
+            {% for producto in productos %}
+            <div class="product-item">
+                <div>
+                    <strong>{{ producto['nombre'] }}</strong> - ${{ producto['precio'] }}
+                </div>
+                <div class="product-actions">
+                    <form method="POST" action="/productos/modificar" style="display:inline;">
+                        <input type="hidden" name="id" value="{{ loop.index0 }}">
+                        <input type="text" name="nuevo_nombre" placeholder="Nuevo nombre" style="width:100px;">
+                        <input type="number" name="nuevo_precio" placeholder="Nuevo precio" min="0" step="0.01" style="width:80px;">
+                        <button class="btn" type="submit">Modificar</button>
+                    </form>
+                    <form method="POST" action="/productos/borrar" style="display:inline;">
+                        <input type="hidden" name="id" value="{{ loop.index0 }}">
+                        <button class="btn" type="submit" style="background:#e53e3e;">Borrar</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <form method="GET" action="/productos/consultar" style="margin-top:2rem;">
+            <label for="consulta">Consultar producto por nombre:</label>
+            <input type="text" id="consulta" name="consulta" placeholder="Nombre del producto">
+            <button class="btn" type="submit">Consultar</button>
+        </form>
+        {% if consulta_resultado %}
+        <div class="messages" style="margin-top:1.5rem;">
+            <table style="width:100%;border-collapse:collapse;">
+                <tr style="background:#f3f4f6;">
+                    <th>País</th>
+                    <th>Precio</th>
+                    <th>Impuesto</th>
+                    <th>Costo Total</th>
+                    <th>Moneda</th>
+                </tr>
+                {% for r in consulta_resultado %}
+                <tr>
+                    <td>{{ r['pais'] }}</td>
+                    <td>{% if r['precio'] != 'N/A' %}{{ r['precio'] }}{% else %}N/A{% endif %}</td>
+                    <td>{% if r['impuesto'] != 'N/A' %}{{ (r['impuesto'] * 100) | round(2) }}%{% else %}N/A{% endif %}</td>
+                    <td>{% if r['costo_total'] != 'N/A' %}{{ r['costo_total'] }}{% else %}N/A{% endif %}</td>
+                    <td>{{ r['moneda'] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+        <a href="/" style="display:block;margin-top:2rem;text-align:center;color:#4f8cff;text-decoration:none;">Volver a registro</a>
+    </div>
+</body>
+</html>

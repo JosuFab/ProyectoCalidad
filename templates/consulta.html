@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultar Información</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>body{font-family:'Roboto',Arial,sans-serif;background:#f6f7fb;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}.container{background:#fff;padding:2.5rem 2rem 2rem 2rem;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);min-width:340px;max-width:500px;text-align:center;}h2{margin-top:0;font-weight:700;color:#222;letter-spacing:0.5px;}.btn{background:#4f8cff;color:#fff;border:none;border-radius:8px;padding:0.8rem;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s;}.btn:hover{background:#2563eb;}table{width:100%;border-collapse:collapse;margin-top:1.5rem;}th,td{border:1px solid #e5e7eb;padding:0.5rem;}th{background:#f3f4f6;}</style>
+</head>
+<body>
+    <div class="container">
+        <h2>Consultar Información</h2>
+        <form method="GET" action="/consulta/resultado" autocomplete="off">
+            <select name="producto_consulta" required>
+                <option value="">Producto</option>
+                {% for producto in productos %}
+                <option value="{{ producto['nombre'] }}">{{ producto['nombre'] }}</option>
+                {% endfor %}
+            </select>
+            <select name="moneda_consulta" required>
+                <option value="">Moneda</option>
+                {% for moneda in monedas %}
+                <option value="{{ moneda }}">{{ moneda }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn" type="submit">Consultar</button>
+        </form>
+        {% if consulta_resultado %}
+        <table>
+            <tr><th>País</th><th>Precio</th><th>Impuesto</th><th>Costo Total</th><th>Moneda</th></tr>
+            {% for r in consulta_resultado %}
+            <tr>
+                <td>{{ r['pais'] }}</td>
+                <td>{% if r['precio'] != 'N/A' %}{{ r['precio'] }}{% else %}N/A{% endif %}</td>
+                <td>{% if r['impuesto'] != 'N/A' %}{{ (r['impuesto'] * 100) | round(2) }}%{% else %}N/A{% endif %}</td>
+                <td>{% if r['costo_total'] != 'N/A' %}{{ r['costo_total'] }}{% else %}N/A{% endif %}</td>
+                <td>{{ r['moneda'] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        <a href="/dashboard" class="btn" style="margin-top:2rem;background:#e5e7eb;color:#222;">Volver al menú</a>
+    </div>
+</body>
+</html>
